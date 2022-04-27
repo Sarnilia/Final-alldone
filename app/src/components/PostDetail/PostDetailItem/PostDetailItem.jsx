@@ -12,11 +12,16 @@ import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import { red } from '@mui/material/colors'
 import FavoriteIcon from '@mui/icons-material/Favorite'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import Grid from '@mui/material/Grid'
+import { useDispatch, useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
 import PostModal from '../PostModal/PostModal'
 import CommentItem from '../../CommentItem/CommentItem'
 import NewCommentForm from '../../NewCommentForm/NewCommentForm'
+import { deleteLikePostQuery, setLikePostQuery } from '../../../redux/actions/likePostAC'
+import { getPostDetailQuery } from '../../../redux/actions/detailPostAC'
 
 const ExpandMore = styled((props) => {
   const { expand, ...other } = props
@@ -30,7 +35,7 @@ const ExpandMore = styled((props) => {
 }))
 
 export default function PostDetailItem({
-  image, author, title, text, comments, tags, _id,
+  image, author, title, text, comments, tags, _id, likes,
 }) {
   // eslint-disable-next-line no-underscore-dangle
   const commentItem = comments.map((comment) => <CommentItem key={comment._id} {...comment} />)
@@ -38,11 +43,27 @@ export default function PostDetailItem({
   const sharedValues = {
     image, title, text, tags, _id, author,
   }
+  const { postId } = useParams()
   const [expanded, setExpanded] = React.useState(false)
 
   const handleExpandClick = () => {
     setExpanded(!expanded)
   }
+
+  const dispatch = useDispatch()
+
+  const userId = useSelector((store) => store.person._id)
+  const likePostHandler = () => {
+    if (!likes.includes(userId)) {
+      dispatch(setLikePostQuery(_id))
+    } else {
+      dispatch(deleteLikePostQuery(_id))
+    }
+  }
+
+  React.useEffect(() => {
+    dispatch(getPostDetailQuery(postId))
+  }, [likes])
 
   return (
     <Grid
@@ -83,12 +104,11 @@ export default function PostDetailItem({
           </Typography>
         </CardContent>
         <CardActions disableSpacing>
-          <IconButton aria-label="add to favorites">
-            <FavoriteIcon />
+          <IconButton aria-label="add to favorite" onClick={likePostHandler}>
+            {(!likes.includes(userId)) ? <FavoriteBorderIcon />
+              : <FavoriteIcon sx={{ color: red[500] }} />}
+            <Typography textAlign="center" variant="h6">{likes.length}</Typography>
           </IconButton>
-          <Typography>
-            Likes
-          </Typography>
           <ExpandMore
             expand={expanded}
             onClick={handleExpandClick}

@@ -51,13 +51,12 @@ export default function PostsItem({
   }
 
   const description = text.length > 200 ? `${text.slice(0, 200)}...` : text
+
   const userId = useSelector((store) => store.person._id)
   const likePostHandler = () => {
     if (!likes.includes(userId)) {
-      console.log('not')
       dispatch(setLikePostQuery(_id))
     } else {
-      console.log('yes')
       dispatch(deleteLikePostQuery(_id))
     }
   }
